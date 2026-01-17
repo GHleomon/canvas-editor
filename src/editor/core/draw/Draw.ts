@@ -1,5 +1,6 @@
 import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
+import { DEFAULT_LINE_SPACING } from '../../dataset/constant/LineSpacing'
 import { RowFlex } from '../../dataset/enum/Row'
 import {
   IAppendElementListOption,
@@ -76,7 +77,7 @@ import {
 } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
 import { RadioParticle } from './particle/RadioParticle'
-import { DeepRequired, IPadding } from '../../interface/Common'
+import { DeepRequired, IPadding } from '../../interface/Common' 
 import {
   ControlComponent,
   ControlIndentation
@@ -1206,6 +1207,11 @@ export class Draw {
     if (!header && !main && !footer) return
     const { isSetCursor = false } = options || {}
     const pageComponentData = [header, main, footer]
+    
+    //临时保存并修改默认行高为 0 
+    const originalDefaultTrMinHeight = this.options.table.defaultTrMinHeight
+    this.options.table.defaultTrMinHeight = 0 
+
     pageComponentData.forEach(data => {
       if (!data) return
       formatElementList(data, {
@@ -1213,6 +1219,10 @@ export class Draw {
         isForceCompensation: true
       })
     })
+
+    // 【核心修复】：还原默认行高配置
+    this.options.table.defaultTrMinHeight = originalDefaultTrMinHeight 
+
     this.setEditorData({
       header,
       main,
@@ -1457,9 +1467,14 @@ export class Draw {
         }
         element.pagingIndex = element.pagingIndex ?? 0
         const trList = element.trList!
-        // 计算前移除上一次的高度
+      // 计算前移除上一次的高度 
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
+           
+          if (tr.height) {
+            tr.minHeight = tr.height
+          } 
+
           tr.height = tr.minHeight || defaultTrMinHeight
           tr.minHeight = tr.height
         }
@@ -1470,6 +1485,8 @@ export class Draw {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
+            // 【修复】确保表格单元格内的元素保留其 rowMargin 属性
+            // 在计算行列表前，检查并保留每个元素的 rowMargin
             const rowList = this.computeRowList({
               innerWidth: (td.width! - tdPaddingWidth) * scale,
               elementList: td.value,
@@ -1478,10 +1495,10 @@ export class Draw {
             })
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
-            // 移除缩放导致的行高变化-渲染时会进行缩放调整
-            const curTdHeight = rowHeight / scale + tdPaddingHeight
-            // 内容高度大于当前单元格高度需增加
-            if (td.height! < curTdHeight) {
+           // 移除缩放导致的行高变化-渲染时会进行缩放调整
+            const curTdHeight = rowHeight / scale + tdPaddingHeight  
+
+            if ((!tr.height || tr.height >= defaultTrMinHeight) && td.height! < curTdHeight) { 
               const extraHeight = curTdHeight - td.height!
               const changeTr = trList[t + td.rowspan - 1]
               changeTr.height += extraHeight
@@ -1528,14 +1545,7 @@ export class Draw {
               reduceHeight = curReduceHeight
             }
           }
-          if (reduceHeight > 0) {
-            const changeTr = trList[t]
-            changeTr.height -= reduceHeight
-            changeTr.tdList.forEach(changeTd => {
-              changeTd.height! -= reduceHeight
-              changeTd.realHeight! -= reduceHeight
-            })
-          }
+           
         }
         // 需要重新计算表格内值
         this.tableParticle.computeRowColInfo(element)
@@ -1750,18 +1760,22 @@ export class Draw {
           metrics.boundingBoxDescent += metrics.height / 2
         }
       }
+      // 应用行间距
+      const lineSpacing = element.lineSpacing || DEFAULT_LINE_SPACING
+      const adjustedRowMargin = rowMargin * lineSpacing
+      
       const ascent =
         !element.hide &&
         ((element.imgDisplay !== ImageDisplay.INLINE &&
           element.type === ElementType.IMAGE) ||
           element.type === ElementType.LATEX)
-          ? metrics.height + rowMargin
-          : metrics.boundingBoxAscent + rowMargin
+          ? metrics.height + adjustedRowMargin
+          : metrics.boundingBoxAscent + adjustedRowMargin
       const height =
-        rowMargin +
+        adjustedRowMargin +
         metrics.boundingBoxAscent +
         metrics.boundingBoxDescent +
-        rowMargin
+        adjustedRowMargin
       const rowElement: IRowElement = Object.assign(element, {
         metrics,
         left: 0,
@@ -2280,40 +2294,42 @@ export class Draw {
         } else if (preElement?.control?.border) {
           this.control.drawBorder(ctx)
         }
-        // 下划线记录
-        if (element.underline || element.control?.underline) {
-          // 下标元素下划线单独绘制
-          if (
-            preElement?.type === ElementType.SUBSCRIPT &&
-            element.type !== ElementType.SUBSCRIPT
-          ) {
-            this.underline.render(ctx)
-          }
-          // 行间距
-          const rowMargin = this.getElementRowMargin(element)
-          // 元素向左偏移量
-          const offsetX = element.left || 0
-          // 下标元素y轴偏移值
-          let offsetY = 0
-          if (element.type === ElementType.SUBSCRIPT) {
-            offsetY = this.subscriptParticle.getOffsetY(element)
-          }
-          // 占位符不参与颜色计算
-          const color = element.control?.underline
-            ? this.options.underlineColor
-            : element.color
-          this.underline.recordFillInfo(
-            ctx,
-            x - offsetX,
-            y + curRow.height - rowMargin + offsetY,
-            metrics.width + offsetX,
-            0,
-            color,
-            element.textDecoration?.style
-          )
-        } else if (preElement?.underline || preElement?.control?.underline) {
-          this.underline.render(ctx)
-        }
+        // 下划线记录  
+if (element.underline || element.control?.underline) {
+  // 下标元素下划线单独绘制
+  if (
+    preElement?.type === ElementType.SUBSCRIPT &&
+    element.type !== ElementType.SUBSCRIPT
+  ) {
+    this.underline.render(ctx)
+  }
+  // 行间距
+  const rowMargin = this.getElementRowMargin(element)
+  // 元素向左偏移量
+  const offsetX = element.left || 0
+  // 下标元素y轴偏移值
+  let offsetY = 0
+  if (element.type === ElementType.SUBSCRIPT) {
+    offsetY = this.subscriptParticle.getOffsetY(element)
+  }
+  
+  // 【颜色逻辑也需要还原】，或者仅判断属性
+  const color = element.control?.underline
+    ? this.options.underlineColor
+    : element.color
+    
+  this.underline.recordFillInfo(
+    ctx,
+    x - offsetX,
+    y + curRow.height - rowMargin + offsetY,
+    metrics.width + offsetX,
+    0,
+    color,
+    element.textDecoration?.style
+  )
+} else if (preElement?.underline || preElement?.control?.underline) {
+  this.underline.render(ctx)
+}
         // 删除线记录
         if (element.strikeout) {
           // 仅文本类元素支持删除线
