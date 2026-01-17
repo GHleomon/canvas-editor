@@ -35,10 +35,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "lib": "npm run lint && tsc && vite build --mode lib",
+    "lib": "npx vite build --mode lib && npm run copy-dist",
+    "copy-dist": "node -e \"const fs=require('fs');const path=require('path');['canvas-editor.umd.js','canvas-editor.umd.js.map'].forEach(f=>fs.copyFileSync(path.join('dist',f),path.join('..','AIMS.Web','wwwroot','lib','canvas-editor',f)))\" && echo 已复制编译文件到 AIMS.Web/wwwroot/lib/canvas-editor/",
     "build": "npm run lint && tsc && vite build --mode app",
     "serve": "vite preview",
     "lint": "eslint .",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "type:check": "tsc --noEmit",
@@ -57,15 +61,18 @@
     "cypress": "13.6.0",
     "cypress-file-upload": "^5.0.8",
     "eslint": "7.32.0",
+    "fast-check": "^4.5.3",
     "simple-git-hooks": "^2.8.1",
     "typescript": "4.9.5",
     "vite": "^2.4.2",
     "vite-plugin-css-injected-by-js": "^2.1.1",
     "vitepress": "1.0.0-beta.6",
+    "vitest": "^0.34.6",
     "vue": "^3.2.45"
   },
   "dependencies": {
-    "prismjs": "^1.27.0"
+    "prismjs": "^1.27.0",
+    "yarn": "^1.22.22"
   },
   "simple-git-hooks": {
     "pre-commit": "npm run lint && npm run type:check",
