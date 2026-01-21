@@ -36,7 +36,7 @@
   "scripts": {
     "dev": "vite",
     "lib": "npx vite build --mode lib && npm run copy-dist",
-    "copy-dist": "node -e \"const fs=require('fs');const path=require('path');['canvas-editor.umd.js','canvas-editor.umd.js.map'].forEach(f=>fs.copyFileSync(path.join('dist',f),path.join('..','AIMS.Web','wwwroot','lib','canvas-editor',f)))\" && echo 已复制编译文件到 AIMS.Web/wwwroot/lib/canvas-editor/",
+    "copy-dist": "node -e \"const fs=require('fs');const path=require('path');['canvas-editor.umd.js','canvas-editor.umd.js.map'].forEach(f=>fs.copyFileSync(path.join('dist',f),path.join('..','AIMSWeb','AIMS.Web','wwwroot','lib','canvas-editor',f)))\" && echo 已复制编译文件到 AIMSWeb/AIMS.Web/wwwroot/lib/canvas-editor/",
     "build": "npm run lint && tsc && vite build --mode app",
     "serve": "vite preview",
     "lint": "eslint .",
