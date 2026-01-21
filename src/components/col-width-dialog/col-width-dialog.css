@@ -1,0 +1,180 @@
+/**
+ * 列宽设置对话框样式
+ */
+
+/* 遮罩层 */
+.col-width-dialog-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  background: #000000;
+  z-index: 99;
+}
+
+/* 容器 */
+.col-width-dialog-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: auto;
+  z-index: 999;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 对话框主体 */
+.col-width-dialog {
+  position: absolute;
+  padding: 0 30px 30px;
+  background: #ffffff;
+  box-shadow: 0 2px 12px 0 rgb(56 56 56 / 20%);
+  border: 1px solid #e2e6ed;
+  border-radius: 2px;
+  min-width: 320px;
+}
+
+/* 标题容器 */
+.col-width-dialog-title {
+  position: relative;
+  border-bottom: 1px solid #e2e6ed;
+  margin-bottom: 30px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 关闭按钮 */
+.col-width-dialog-title i {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  display: inline-block;
+  background: url(../../assets/images/close.svg);
+}
+
+/* 选项容器 */
+.col-width-dialog-option {
+  margin-bottom: 18px;
+}
+
+/* 选项项容器 */
+.col-width-dialog-option__item {
+  display: flex;
+  align-items: center;
+}
+
+/* 标签样式 */
+.col-width-dialog-option__item > span:first-child {
+  margin-right: 12px;
+  font-size: 14px;
+  color: #3d4757;
+  white-space: nowrap;
+}
+
+/* 输入框样式 */
+.col-width-dialog-option__item input {
+  width: 150px;
+  height: 30px;
+  border-radius: 2px;
+  border: 1px solid #d3d3d3;
+  padding: 5px 10px;
+  box-sizing: border-box;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.col-width-dialog-option__item input:focus {
+  border-color: #4991f2;
+}
+
+/* 输入框错误状态 */
+.col-width-dialog-option__item input.error {
+  border-color: #f56c6c;
+}
+
+.col-width-dialog-option__item input.error:focus {
+  border-color: #f56c6c;
+}
+
+/* 单位标签 */
+.col-width-dialog-unit {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #606266;
+}
+
+/* 错误提示 */
+.col-width-dialog-error {
+  color: #f56c6c;
+  font-size: 12px;
+  margin-top: 8px;
+  min-height: 18px;
+  display: none;
+}
+
+.col-width-dialog-error.visible {
+  display: block;
+}
+
+/* 按钮容器 */
+.col-width-dialog-menu {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* 按钮基础样式 */
+.col-width-dialog-menu button {
+  position: relative;
+  display: inline-block;
+  border: 1px solid #e2e6ed;
+  border-radius: 2px;
+  background: #ffffff;
+  line-height: 22px;
+  padding: 0 16px;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.col-width-dialog-menu button:hover {
+  background: rgba(25, 55, 88, 0.04);
+}
+
+/* 取消按钮 */
+.col-width-dialog-menu__cancel {
+  margin-right: 16px;
+}
+
+/* 确认按钮 */
+.col-width-dialog-menu button[type='submit'] {
+  color: #ffffff;
+  background: #4991f2;
+  border-color: #4991f2;
+}
+
+.col-width-dialog-menu button[type='submit']:hover {
+  background: #5b9cf3;
+  border-color: #5b9cf3;
+}
+
+/* 隐藏数字输入框的上下箭头 */
+.col-width-dialog-option__item input[type='number']::-webkit-inner-spin-button,
+.col-width-dialog-option__item input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.col-width-dialog-option__item input[type='number'] {
+  -moz-appearance: textfield;
+}

@@ -69,5 +69,7 @@ export interface IContextmenuLang {
     deleteTable: string
     mergeCell: string
     mergeCancelCell: string
+    setRowHeight: string
+    setColWidth: string
   }
 }

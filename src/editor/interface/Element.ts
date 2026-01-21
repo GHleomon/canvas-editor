@@ -37,6 +37,7 @@ export interface IElementStyle {
   rowFlex?: RowFlex
   rowMargin?: number
   letterSpacing?: number
+  lineSpacing?: number
   textDecoration?: ITextDecoration
 }
 

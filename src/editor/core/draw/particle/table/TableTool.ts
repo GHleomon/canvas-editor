@@ -17,7 +17,7 @@ interface IAnchorMouseDown {
 
 export class TableTool {
   // 单元格最小宽度
-  private readonly MIN_TD_WIDTH = 20
+  private readonly MIN_TD_WIDTH = 2
   // 行列工具相对表格偏移值
   private readonly ROW_COL_OFFSET = 18
   // 快速添加行列工具宽度
@@ -439,13 +439,17 @@ export class TableTool {
         let isChangeSize = false
         // 改变尺寸
         if (order === TableOrder.ROW) {
-          const trList = element.trList!
+           const trList = element.trList!
           const tr = trList[index] || trList[index - 1]
-          // 最大移动高度-向上移动超出最小高度限定，则减少移动量
-          const { defaultTrMinHeight } = this.options.table
-          if (dy < 0 && tr.height + dy < defaultTrMinHeight) {
-            dy = defaultTrMinHeight - tr.height
+
+          // 【修改点】不再使用配置的 defaultTrMinHeight，而是使用一个极小值（如 5px）
+          // 这样即使单元格有内容，你也可以强制把行高拖拽得比内容还小（内容会被裁剪或溢出）
+          const FORCE_MIN_HEIGHT = 2 
+
+          if (dy < 0 && tr.height + dy < FORCE_MIN_HEIGHT) {
+            dy = FORCE_MIN_HEIGHT - tr.height
           }
+          
           if (dy) {
             tr.height += dy
             tr.minHeight = tr.height

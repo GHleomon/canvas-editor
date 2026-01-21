@@ -53,6 +53,13 @@ export class Command {
   public executeTableTdSlashType: CommandAdapt['tableTdSlashType']
   public executeTableTdBackgroundColor: CommandAdapt['tableTdBackgroundColor']
   public executeTableSelectAll: CommandAdapt['tableSelectAll']
+  public executeSetTableRowHeight: CommandAdapt['setTableRowHeight']
+  public executeGetCurrentRowHeight: CommandAdapt['getCurrentRowHeight']
+  public executeSetTableColWidth: CommandAdapt['setTableColWidth']
+  public executeGetCurrentColWidth: CommandAdapt['getCurrentColWidth']
+  public executeDeleteSelectedTableRows: CommandAdapt['deleteSelectedTableRows']
+  public executeSetLineSpacing: CommandAdapt['setLineSpacing']
+  public executeGetCurrentLineSpacing: CommandAdapt['getCurrentLineSpacing']
   public executeImage: CommandAdapt['image']
   public executeHyperlink: CommandAdapt['hyperlink']
   public executeDeleteHyperlink: CommandAdapt['deleteHyperlink']
@@ -200,6 +207,13 @@ export class Command {
     this.executeTableTdBackgroundColor =
       adapt.tableTdBackgroundColor.bind(adapt)
     this.executeTableSelectAll = adapt.tableSelectAll.bind(adapt)
+    this.executeSetTableRowHeight = adapt.setTableRowHeight.bind(adapt)
+    this.executeGetCurrentRowHeight = adapt.getCurrentRowHeight.bind(adapt)
+    this.executeSetTableColWidth = adapt.setTableColWidth.bind(adapt)
+    this.executeGetCurrentColWidth = adapt.getCurrentColWidth.bind(adapt)
+    this.executeDeleteSelectedTableRows = adapt.deleteSelectedTableRows.bind(adapt)
+    this.executeSetLineSpacing = adapt.setLineSpacing.bind(adapt)
+    this.executeGetCurrentLineSpacing = adapt.getCurrentLineSpacing.bind(adapt)
     this.executeImage = adapt.image.bind(adapt)
     this.executeHyperlink = adapt.hyperlink.bind(adapt)
     this.executeDeleteHyperlink = adapt.deleteHyperlink.bind(adapt)

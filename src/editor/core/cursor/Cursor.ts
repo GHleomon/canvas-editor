@@ -1,4 +1,4 @@
-import { nextTick } from 'process'
+//import { nextTick } from 'process'
 import { CURSOR_AGENT_OFFSET_HEIGHT } from '../../dataset/constant/Cursor'
 import { EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { MoveDirection } from '../../dataset/enum/Observer'
@@ -97,13 +97,14 @@ export class Cursor {
     }
   }
 
-  public focus() {
+ public focus() {
     // 移动端只读模式禁用聚焦避免唤起输入法，web端允许聚焦避免事件无法捕获
     if (isMobile && this.draw.isReadonly()) return
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     // 光标不聚焦时重新定位
     if (document.activeElement !== agentCursorDom) {
-      agentCursorDom.focus()
+      // 【修改点】：添加 { preventScroll: true } 防止页面滚动跳动
+      agentCursorDom.focus({ preventScroll: true })
       agentCursorDom.setSelectionRange(0, 0)
     }
   }
@@ -167,7 +168,7 @@ export class Cursor {
       return
     }
     // 记录旧光标位置：用于光标移动到可视范围内
-    const oldTop = this.cursorDom.style.top
+    //const oldTop = this.cursorDom.style.top
     // 设置光标位置
     const isReadonly = this.draw.isReadonly()
     this.cursorDom.style.width = `${width * scale}px`
@@ -181,7 +182,9 @@ export class Cursor {
     } else {
       this._clearBlinkTimeout()
     }
-    // 移动到视野范围内
+     // 【修改点】：彻底注释掉这段“移动到视野范围内”的代码
+    // 这样点击或输入时，编辑器绝不会自动滚动页面，解决了“乱窜”问题
+    /*
     nextTick(() => {
       // nexttick后执行 => 避免画布没有渲染完成造成残影
       this.moveCursorToVisible({
@@ -190,6 +193,7 @@ export class Cursor {
           parseInt(oldTop) > cursorTop ? MoveDirection.UP : MoveDirection.DOWN
       })
     })
+    */
   }
 
   public recoveryCursor() {

@@ -130,11 +130,11 @@ export class SelectControl implements IControlInstance {
     context: IControlContext = {},
     options: IControlRuleOption = {}
   ): number {
-    // 校验是否可以设置
+    
+    // 【修改点 1】移除 inputAble 校验，允许任何情况下设置值
     if (
-      !this.element.control?.selectExclusiveOptions?.inputAble ||
-      (!options.isIgnoreDisabledRule &&
-        this.control.getIsDisabledControl(context))
+      !options.isIgnoreDisabledRule &&
+      this.control.getIsDisabledControl(context)
     ) {
       return -1
     }
@@ -191,54 +191,44 @@ export class SelectControl implements IControlInstance {
     const { startIndex, endIndex } = range
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
+   
     // backspace
-    const inputAble = this.element.control?.selectExclusiveOptions?.inputAble
     if (evt.key === KeyMap.Backspace) {
-      // 清空选项
       if (startIndex !== endIndex) {
-        // 设置可输入时：仅删除选择元素
-        if (inputAble) {
-          this.draw.spliceElementList(
-            elementList,
-            startIndex + 1,
-            endIndex - startIndex
-          )
-          const value = this.getValue()
-          if (!value.length) {
-            this.control.addPlaceholder(startIndex)
-          }
-          return startIndex
+        // 强制走删除元素逻辑，而不是清空控件
+        this.draw.spliceElementList(
+          elementList,
+          startIndex + 1,
+          endIndex - startIndex
+        )
+        const value = this.getValue()
+        if (!value.length) {
+          this.control.addPlaceholder(startIndex)
         }
-        return this.clearSelect()
+        return startIndex
       } else {
         if (
-          startElement.controlComponent === ControlComponent.PREFIX ||
-          startElement.controlComponent === ControlComponent.PRE_TEXT ||
-          endElement.controlComponent === ControlComponent.POSTFIX ||
-          endElement.controlComponent === ControlComponent.POST_TEXT ||
-          startElement.controlComponent === ControlComponent.PLACEHOLDER
+            startElement.controlComponent === ControlComponent.PREFIX ||
+            startElement.controlComponent === ControlComponent.PRE_TEXT ||
+            endElement.controlComponent === ControlComponent.POSTFIX ||
+            endElement.controlComponent === ControlComponent.POST_TEXT ||
+            startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {
-          // 前缀、后缀、占位符
           return this.control.removeControl(startIndex)
         } else {
-          // 设置可输入时：仅往前删除元素
-          if (inputAble) {
-            this.draw.spliceElementList(elementList, startIndex, 1)
-            const value = this.getValue()
-            if (!value.length) {
-              this.control.addPlaceholder(startIndex - 1)
-            }
-            return startIndex - 1
+          // 强制走文本删除逻辑
+          this.draw.spliceElementList(elementList, startIndex, 1)
+          const value = this.getValue()
+          if (!value.length) {
+            this.control.addPlaceholder(startIndex - 1)
           }
-          // 清空选项
-          return this.clearSelect()
+          return startIndex - 1
         }
       }
     } else if (evt.key === KeyMap.Delete) {
       // 移除选区元素
       if (startIndex !== endIndex) {
-        // 删除元素
-        if (inputAble) {
+         // 强制走删除逻辑
           this.draw.spliceElementList(
             elementList,
             startIndex + 1,
@@ -249,9 +239,6 @@ export class SelectControl implements IControlInstance {
             this.control.addPlaceholder(startIndex)
           }
           return startIndex
-        }
-        // 清空选项
-        return this.clearSelect()
       } else {
         const endNextElement = elementList[endIndex + 1]
         if (
@@ -262,24 +249,22 @@ export class SelectControl implements IControlInstance {
           endNextElement.controlComponent === ControlComponent.POST_TEXT ||
           startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {
-          // 前缀、后缀、占位符
           return this.control.removeControl(startIndex)
         } else {
-          // 删除元素
-          if (inputAble) {
-            this.draw.spliceElementList(elementList, startIndex + 1, 1)
-            const value = this.getValue()
-            if (!value.length) {
-              this.control.addPlaceholder(startIndex)
-            }
-            return startIndex
+          // 强制走文本删除逻辑
+          this.draw.spliceElementList(elementList, startIndex + 1, 1)
+          const value = this.getValue()
+          if (!value.length) {
+            this.control.addPlaceholder(startIndex)
           }
-          // 清空选项
-          return this.clearSelect()
+          return startIndex
         }
       }
     }
-    return endIndex
+    
+    // 【修改点 3】核心：对于普通按键（如打字），返回 null
+    // 返回 null 会让 Editor 主循环接管事件，执行默认的 insertText，实现打字功能
+    return null
   }
 
   public cut(): number {

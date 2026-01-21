@@ -49,6 +49,32 @@ export function hitCheckbox(element: IElement, draw: Draw) {
 
 export function hitRadio(element: IElement, draw: Draw) {
   const { radio, control } = element
+  const mode = draw.getMode()
+  const isReadonly = draw.isReadonly()
+
+  // 表单模式下忽略只读状态，允许交互
+  const isFormMode = mode === EditorMode.FORM
+  const canInteract = !isReadonly || isFormMode
+
+  if (!canInteract) return
+
+  // 【修复】表单模式下逻辑
+  if (isFormMode) {
+    const groupId = control?.groupId
+    // 只要有 groupId 和 radio.code 即可，不需要 controlId
+    if (!groupId || !radio?.code) return
+
+    // 直接实例化 RadioControl，利用其内部基于 groupId 的查找逻辑
+    const controlManager = draw.getControl()
+    const radioControl = new RadioControl(element, controlManager)
+    
+    // 传递当前点击的 code
+    // RadioControl.setSelect 内部会自动处理互斥逻辑，以及反选（如果支持）
+    radioControl.setSelect([radio.code])
+    return
+  }
+
+  // 编辑模式逻辑
   // 单选框不在控件内独立控制
   if (!control) {
     draw.getRadioParticle().setSelect(element)
@@ -66,6 +92,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   const isReadonly = draw.isReadonly()
   const rangeManager = draw.getRange()
   const position = draw.getPosition()
+  const mode = draw.getMode()
   // 存在选区时忽略右键点击
   const range = rangeManager.getRange()
   if (
@@ -145,10 +172,14 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     }
     rangeManager.setRange(startIndex, endIndex)
     position.setCursorPosition(positionList[curIndex])
-    // 复选框
-    if (isDirectHitCheckbox && !isReadonly) {
+
+    // 复选框与单选框点击处理
+    // 增加 isFormMode 判断，允许表单模式下交互
+    const isFormMode = mode === EditorMode.FORM
+    
+    if (isDirectHitCheckbox && (!isReadonly || isFormMode)) {
       hitCheckbox(curElement, draw)
-    } else if (isDirectHitRadio && !isReadonly) {
+    } else if (isDirectHitRadio && (!isReadonly || isFormMode)) {
       hitRadio(curElement, draw)
     } else if (
       curElement.controlComponent === ControlComponent.VALUE &&

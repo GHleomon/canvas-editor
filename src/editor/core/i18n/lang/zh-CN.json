@@ -35,6 +35,7 @@
       "insertRightCol": "右侧插入1列",
       "deleteRowCol": "删除行列",
       "deleteRow": "删除1行",
+      "deleteSelectedRows": "删除选中行",
       "deleteCol": "删除1列",
       "deleteTable": "删除整个表格",
       "mergeCell": "合并单元格",
@@ -55,7 +56,9 @@
       "borderTdBottom": "下边框",
       "borderTdLeft": "左边框",
       "borderTdForward": "正斜线",
-      "borderTdBack": "反斜线"
+      "borderTdBack": "反斜线",
+      "setRowHeight": "设置行高",
+      "setColWidth": "设置列宽"
     }
   },
   "datePicker": {

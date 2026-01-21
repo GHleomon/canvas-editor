@@ -90,6 +90,7 @@ export interface IControlStyle {
   highlight?: string
   italic?: boolean
   strikeout?: boolean
+  underline?: boolean
 }
 
 export type IControl = IControlBasic &

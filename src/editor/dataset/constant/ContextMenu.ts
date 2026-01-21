@@ -55,7 +55,10 @@ export const INTERNAL_CONTEXT_MENU_KEY = {
     DELETE_ROW: 'tableDeleteRow',
     DELETE_COL: 'tableDeleteCol',
     DELETE_TABLE: 'tableDeleteTable',
+    DELETE_SELECTED_ROWS: 'tableDeleteSelectedRows',
     MERGE_CELL: 'tableMergeCell',
-    CANCEL_MERGE_CELL: 'tableCancelMergeCell'
+    CANCEL_MERGE_CELL: 'tableCancelMergeCell',
+    SET_ROW_HEIGHT: 'tableSetRowHeight',
+    SET_COL_WIDTH: 'tableSetColWidth'
   }
 }

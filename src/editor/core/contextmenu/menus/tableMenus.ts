@@ -8,6 +8,8 @@ import {
 } from '../../../dataset/enum/table/Table'
 import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
 import { Command } from '../../command/Command'
+import { RowHeightDialog } from '../../../../components/row-height-dialog/RowHeightDialog'
+import { ColWidthDialog } from '../../../../components/col-width-dialog/ColWidthDialog'
 const {
   TABLE: {
     BORDER,
@@ -36,8 +38,11 @@ const {
     DELETE_ROW,
     DELETE_COL,
     DELETE_TABLE,
+    DELETE_SELECTED_ROWS,
     MERGE_CELL,
-    CANCEL_MERGE_CELL
+    CANCEL_MERGE_CELL,
+    SET_ROW_HEIGHT,
+    SET_COL_WIDTH
   }
 } = INTERNAL_CONTEXT_MENU_KEY
 
@@ -279,6 +284,15 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
+        key: DELETE_SELECTED_ROWS,
+        i18nPath: 'contextmenu.table.deleteSelectedRows',
+        icon: 'delete-rows',
+        when: () => true,
+        callback: (command: Command) => {
+          command.executeDeleteSelectedTableRows()
+        }
+      },
+      {
         key: DELETE_COL,
         i18nPath: 'contextmenu.table.deleteCol',
         icon: 'delete-col',
@@ -326,6 +340,54 @@ export const tableMenus: IRegisterContextMenu[] = [
     },
     callback: (command: Command) => {
       command.executeCancelMergeTableCell()
+    }
+  },
+  {
+    key: SET_ROW_HEIGHT,
+    i18nPath: 'contextmenu.table.setRowHeight',
+    icon: 'row-height',
+    when: payload => {
+      return (
+        !payload.isReadonly &&
+        payload.isInTable &&
+        payload.options.mode !== EditorMode.FORM
+      )
+    },
+    callback: (command: Command) => {
+      // 获取当前行高（像素）
+      const currentHeightPixels = command.executeGetCurrentRowHeight()
+
+      // 显示行高设置对话框
+      new RowHeightDialog({
+        defaultValuePixels: currentHeightPixels,
+        onConfirm: (heightPixels: number) => {
+          command.executeSetTableRowHeight(heightPixels)
+        }
+      })
+    }
+  },
+  {
+    key: SET_COL_WIDTH,
+    i18nPath: 'contextmenu.table.setColWidth',
+    icon: 'col-width',
+    when: payload => {
+      return (
+        !payload.isReadonly &&
+        payload.isInTable &&
+        payload.options.mode !== EditorMode.FORM
+      )
+    },
+    callback: (command: Command) => {
+      // 获取当前列宽（像素）
+      const currentWidthPixels = command.executeGetCurrentColWidth()
+
+      // 显示列宽设置对话框
+      new ColWidthDialog({
+        defaultValuePixels: currentWidthPixels,
+        onConfirm: (widthPixels: number) => {
+          command.executeSetTableColWidth(widthPixels)
+        }
+      })
     }
   }
 ]

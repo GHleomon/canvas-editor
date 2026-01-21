@@ -985,4 +985,283 @@ export class TableOperate {
       isSubmitHistory: false
     })
   }
+
+  /**
+   * 获取选中的行索引列表
+   * @returns 行索引数组
+   */
+  public getSelectedTrIndexes(): number[] {
+    const { startTrIndex, endTrIndex, isCrossRowCol } = this.range.getRange()
+    const positionContext = this.position.getPositionContext()
+
+    if (isCrossRowCol && startTrIndex !== undefined && endTrIndex !== undefined) {
+      // 跨行选择：返回范围内所有行
+      const indexes: number[] = []
+      const minIdx = Math.min(startTrIndex, endTrIndex)
+      const maxIdx = Math.max(startTrIndex, endTrIndex)
+      for (let i = minIdx; i <= maxIdx; i++) {
+        indexes.push(i)
+      }
+      return indexes
+    }
+
+    // 单行选择
+    return positionContext.trIndex !== undefined ? [positionContext.trIndex] : []
+  }
+
+  /**
+   * 获取当前行的高度（像素）
+   * @returns 高度值或undefined
+   */
+  public getCurrentRowHeight(): number | undefined {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return undefined
+
+    const { index, trIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+
+    return element.trList?.[trIndex!]?.height
+  }
+
+  /**
+   * 设置选中行的高度
+   * @param heightPixels 高度（像素）
+   */
+  public setTableRowHeight(heightPixels: number): void {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+
+    const { index } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const trList = element.trList!
+
+    // 获取选中的行索引列表
+    const selectedTrIndexes = this.getSelectedTrIndexes()
+
+    // 设置每行的高度
+    for (const trIdx of selectedTrIndexes) {
+      if (trIdx >= 0 && trIdx < trList.length) {
+        trList[trIdx].height = heightPixels
+      }
+    }
+
+    // 重新渲染
+    const { endIndex } = this.range.getRange()
+    this.draw.render({ curIndex: endIndex })
+  }
+
+  /**
+   * 获取选中的列索引列表
+   * @returns 列索引数组（基于 colgroup 的实际列索引）
+   */
+  public getSelectedColIndexes(): number[] {
+    const {
+      startTdIndex,
+      endTdIndex,
+      startTrIndex,
+      endTrIndex,
+      isCrossRowCol
+    } = this.range.getRange()
+    const positionContext = this.position.getPositionContext()
+
+    if (!positionContext.isTable) return []
+
+    const { index } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+
+    if (
+      isCrossRowCol &&
+      startTdIndex !== undefined &&
+      endTdIndex !== undefined &&
+      startTrIndex !== undefined &&
+      endTrIndex !== undefined
+    ) {
+      // 跨列选择：获取选中单元格的实际列索引范围
+      let startTd = curTrList[startTrIndex].tdList[startTdIndex]
+      let endTd = curTrList[endTrIndex].tdList[endTdIndex]
+
+      // 交换起始位置（确保 startTd 在左上角）
+      if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
+        const temp = startTd
+        startTd = endTd
+        endTd = temp
+      }
+
+      // 使用实际的列索引（colIndex），考虑 colspan
+      const startColIndex = startTd.colIndex!
+      const endColIndex = endTd.colIndex! + (endTd.colspan - 1)
+
+      const indexes: number[] = []
+      for (let i = startColIndex; i <= endColIndex; i++) {
+        indexes.push(i)
+      }
+      return indexes
+    }
+
+    // 单列选择：获取当前单元格的列索引
+    const { trIndex, tdIndex } = positionContext
+    const td = curTrList[trIndex!]?.tdList[tdIndex!]
+    return td?.colIndex !== undefined ? [td.colIndex] : []
+  }
+
+  /**
+   * 获取当前列的宽度（像素）
+   * @returns 宽度值或undefined
+   */
+  public getCurrentColWidth(): number | undefined {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return undefined
+
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const td = element.trList?.[trIndex!]?.tdList[tdIndex!]
+    const colIndex = td?.colIndex
+
+    if (colIndex === undefined) return undefined
+    return element.colgroup?.[colIndex]?.width
+  }
+
+  /**
+   * 设置选中列的宽度
+   * @param widthPixels 宽度（像素）
+   */
+  public setTableColWidth(widthPixels: number): void {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+
+    const { index } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const colgroup = element.colgroup!
+
+    // 获取选中的列索引列表
+    const selectedColIndexes = this.getSelectedColIndexes()
+
+    // 记录宽度变化量
+    let totalWidthChange = 0
+
+    // 设置每列的宽度
+    for (const colIdx of selectedColIndexes) {
+      if (colIdx >= 0 && colIdx < colgroup.length) {
+        const oldWidth = colgroup[colIdx].width
+        colgroup[colIdx].width = widthPixels
+        totalWidthChange += widthPixels - oldWidth
+      }
+    }
+
+    // 更新表格总宽度
+    if (totalWidthChange !== 0) {
+      element.width = (element.width || 0) + totalWidthChange
+    }
+
+    // 重新渲染
+    const { endIndex } = this.range.getRange()
+    this.draw.render({ curIndex: endIndex })
+  }
+
+  /**
+   * 删除选中的多个表格行
+   */
+  public deleteSelectedTableRows(): void {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+
+    const { index } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const trList = element.trList!
+
+    // 获取选中的行索引列表
+    const selectedTrIndexes = this.getSelectedTrIndexes()
+    if (selectedTrIndexes.length === 0) return
+
+    // 如果删除所有行，删除整个表格
+    if (selectedTrIndexes.length >= trList.length) {
+      this.deleteTable()
+      return
+    }
+
+    // 按降序排序索引，从后往前删除（避免索引变化）
+    const sortedIndexes = selectedTrIndexes.sort((a, b) => b - a)
+
+    // 处理跨行单元格
+    for (const trIdx of sortedIndexes) {
+      const tr = trList[trIdx]
+      const curTdRowIndex = tr.tdList[0].rowIndex!
+
+      // 之前行缩小 rowspan
+      for (let r = 0; r < curTdRowIndex; r++) {
+        const prevTr = trList[r]
+        for (let d = 0; d < prevTr.tdList.length; d++) {
+          const td = prevTr.tdList[d]
+          if (td.rowIndex! + td.rowspan > curTdRowIndex) {
+            td.rowspan--
+          }
+        }
+      }
+
+      // 补跨行单元格到下一行
+      if (trIdx + 1 < trList.length) {
+        for (let d = 0; d < tr.tdList.length; d++) {
+          const td = tr.tdList[d]
+          if (td.rowspan > 1) {
+            const tdId = getUUID()
+            const nextTr = trList[trIdx + 1]
+            nextTr.tdList.splice(d, 0, {
+              id: tdId,
+              rowspan: td.rowspan - 1,
+              colspan: td.colspan,
+              value: [
+                {
+                  value: ZERO,
+                  size: 16,
+                  tableId: element.id,
+                  trId: nextTr.id,
+                  tdId
+                }
+              ]
+            })
+          }
+        }
+      }
+    }
+
+    // 删除选中的行
+    for (const trIdx of sortedIndexes) {
+      trList.splice(trIdx, 1)
+    }
+
+    // 确定光标位置
+    const minDeletedIndex = Math.min(...selectedTrIndexes)
+    const newTrIndex = Math.min(minDeletedIndex, trList.length - 1)
+    const newTdIndex = 0
+
+    // 重新设置上下文
+    if (newTrIndex >= 0 && trList[newTrIndex]) {
+      this.position.setPositionContext({
+        isTable: true,
+        index,
+        trIndex: newTrIndex,
+        tdIndex: newTdIndex,
+        tdId: trList[newTrIndex].tdList[newTdIndex].id,
+        trId: trList[newTrIndex].id,
+        tableId: element.id
+      })
+      this.range.setRange(0, 0)
+    } else {
+      this.position.setPositionContext({
+        isTable: false
+      })
+      this.range.clearRange()
+    }
+
+    // 重新渲染
+    this.draw.render({ curIndex: index })
+    this.tableTool.dispose()
+  }
 }

@@ -55,7 +55,9 @@
       "borderTdBottom": "Bottom",
       "borderTdLeft": "Left",
       "borderTdForward": "Forward",
-      "borderTdBack": "Back"
+      "borderTdBack": "Back",
+      "setRowHeight": "Set row height",
+      "setColWidth": "Set column width"
     }
   },
   "datePicker": {

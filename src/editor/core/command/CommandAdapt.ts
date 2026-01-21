@@ -112,6 +112,7 @@ import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
 import { INavigateInfo, Search } from '../draw/interactive/Search'
+import { LineSpacing } from '../draw/particle/LineSpacing'
 import { TableOperate } from '../draw/particle/table/TableOperate'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { pasteByApi } from '../event/handlers/paste'
@@ -146,6 +147,7 @@ export class CommandAdapt {
   private i18n: I18n
   private zone: Zone
   private tableOperate: TableOperate
+  private lineSpacing: LineSpacing
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -160,6 +162,7 @@ export class CommandAdapt {
     this.i18n = draw.getI18n()
     this.zone = draw.getZone()
     this.tableOperate = draw.getTableOperate()
+    this.lineSpacing = new LineSpacing(draw)
   }
 
   public mode(payload: EditorMode) {
@@ -1060,6 +1063,69 @@ export class CommandAdapt {
 
   public tableSelectAll() {
     this.tableOperate.tableSelectAll()
+  }
+
+  /**
+   * 设置表格行高
+   * @param heightPixels 高度（像素）
+   */
+  public setTableRowHeight(heightPixels: number): void {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.setTableRowHeight(heightPixels)
+  }
+
+  /**
+   * 获取当前行的高度（像素）
+   * @returns 高度值或undefined
+   */
+  public getCurrentRowHeight(): number | undefined {
+    return this.tableOperate.getCurrentRowHeight()
+  }
+
+  /**
+   * 设置表格列宽
+   * @param widthPixels 宽度（像素）
+   */
+  public setTableColWidth(widthPixels: number): void {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.setTableColWidth(widthPixels)
+  }
+
+  /**
+   * 获取当前列的宽度（像素）
+   * @returns 宽度值或undefined
+   */
+  public getCurrentColWidth(): number | undefined {
+    return this.tableOperate.getCurrentColWidth()
+  }
+
+  /**
+   * 删除选中的多个表格行
+   */
+  public deleteSelectedTableRows(): void {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.deleteSelectedTableRows()
+  }
+
+  /**
+   * 设置行间距
+   * @param spacing 行间距倍数（0.1-3.0）
+   */
+  public setLineSpacing(spacing: number): void {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.lineSpacing.setLineSpacing(spacing)
+  }
+
+  /**
+   * 获取当前行间距
+   * @returns 行间距值或默认值
+   */
+  public getCurrentLineSpacing(): number {
+    return this.lineSpacing.getCurrentLineSpacing()
   }
 
   public hyperlink(

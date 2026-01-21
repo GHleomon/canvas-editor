@@ -126,7 +126,8 @@ export const CONTROL_STYLE_ATTR: Array<keyof IControlStyle> = [
   'bold',
   'highlight',
   'italic',
-  'strikeout'
+  'strikeout',
+  'underline' // 修改点：添加 underline 到白名单
 ]
 
 export const AREA_CONTEXT_ATTR: Array<keyof IElement> = ['areaId', 'area']
