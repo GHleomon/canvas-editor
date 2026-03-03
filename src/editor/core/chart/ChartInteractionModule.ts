@@ -402,12 +402,12 @@ export class ChartInteractionModule {
   }
 
   /**
-   * 空图表画点
+   * 空图表画点 (预留功能)
    */
-  private handleEmptyChartPlot(_params: any): void {
-    // 此功能已集成到 setupDragEdit 的 mouseDownHandler 中
-    console.log('[ChartInteraction] 空图表画点功能已集成到拖拽编辑中')
-  }
+  // private handleEmptyChartPlot(_params: any): void {
+  //   // 此功能已集成到 setupDragEdit 的 mouseDownHandler 中
+  //   console.log('[ChartInteraction] 空图表画点功能已集成到拖拽编辑中')
+  // }
 
   /**
    * 连续更新数据点
@@ -496,19 +496,19 @@ export class ChartInteractionModule {
   }
 
   /**
-   * 创建初始数据点
+   * 创建初始数据点 (预留功能)
    */
-  private createInitialPoint(seriesIndex: number, dataIndex: number, yValue: number): void {
-    console.log('[ChartInteraction] 创建初始数据点:', { seriesIndex, dataIndex, yValue })
+  // private createInitialPoint(seriesIndex: number, dataIndex: number, yValue: number): void {
+  //   console.log('[ChartInteraction] 创建初始数据点:', { seriesIndex, dataIndex, yValue })
 
-    const option = this.chart.getOption()
-    const series = option.series[seriesIndex]
-    const clampedValue = this.clampValue(seriesIndex, yValue)
-    series.data[dataIndex] = clampedValue
-    this.chart.setOption(option)
+  //   const option = this.chart.getOption()
+  //   const series = option.series[seriesIndex]
+  //   const clampedValue = this.clampValue(seriesIndex, yValue)
+  //   series.data[dataIndex] = clampedValue
+  //   this.chart.setOption(option)
 
-    console.log('[ChartInteraction] 初始数据点已创建')
-  }
+  //   console.log('[ChartInteraction] 初始数据点已创建')
+  // }
 
   /**
    * 数值限制

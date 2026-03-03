@@ -4,7 +4,6 @@
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
     "moduleResolution": "Node",
-    "ignoreDeprecations": "6.0",
     "strict": true,
     "sourceMap": true,
     "resolveJsonModule": true,
@@ -16,6 +15,7 @@
     "noImplicitReturns": true,
     "outDir": "dist",
     "rootDir": "",
+    "skipLibCheck": true
   },
   "include": ["./src/"],
   "exclude": [
