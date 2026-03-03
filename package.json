@@ -71,6 +71,7 @@
     "vue": "^3.2.45"
   },
   "dependencies": {
+    "echarts": "^5.5.0",
     "prismjs": "^1.27.0",
     "yarn": "^1.22.22"
   },

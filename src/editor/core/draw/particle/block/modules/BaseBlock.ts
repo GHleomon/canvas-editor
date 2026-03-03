@@ -6,15 +6,16 @@ import { Draw } from '../../../Draw'
 import { BlockParticle } from '../BlockParticle'
 import { IFrameBlock } from './IFrameBlock'
 import { VideoBlock } from './VideoBlock'
+import { EChartsBlock } from './EChartsBlock'
 
 export class BaseBlock {
   private draw: Draw
   private options: Required<IEditorOption>
   private element: IRowElement
-  private block: IFrameBlock | VideoBlock | null
+  private block: IFrameBlock | VideoBlock | EChartsBlock | null
   private blockContainer: HTMLDivElement
   private blockItem: HTMLDivElement
-  protected blockCache: Map<string, IFrameBlock | VideoBlock>
+  protected blockCache: Map<string, IFrameBlock | VideoBlock | EChartsBlock>
   // 缩放业务
   private resizerMask: HTMLDivElement
   private resizerSelection: HTMLDivElement
@@ -246,6 +247,19 @@ export class BaseBlock {
         this.draw.getImageObserver().add(promise)
         this.blockCache.set(this.element.id!, this.block)
       }
+    } else if (block.type === BlockType.ECHARTS) {
+      // ECharts 图表的打印模式渲染
+      this.blockItem.style.display = 'none'
+      if (this.blockCache.has(this.element.id!)) {
+        const echartsBlock = <EChartsBlock>this.blockCache.get(this.element.id!)
+        const promise = echartsBlock.snapshot(ctx, x, y)
+        this.draw.getImageObserver().add(promise)
+      } else {
+        this.block = new EChartsBlock(this.element)
+        const promise = this.block.snapshot(ctx, x, y)
+        this.draw.getImageObserver().add(promise)
+        this.blockCache.set(this.element.id!, this.block)
+      }
     }
   }
 
@@ -256,6 +270,10 @@ export class BaseBlock {
       this.block.render(this.blockItem)
     } else if (block.type === BlockType.VIDEO) {
       this.block = new VideoBlock(this.element)
+      this.block.render(this.blockItem)
+    } else if (block.type === BlockType.ECHARTS) {
+      // ECharts 图表渲染
+      this.block = new EChartsBlock(this.element)
       this.block.render(this.blockItem)
     }
   }

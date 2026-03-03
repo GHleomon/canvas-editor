@@ -73,6 +73,8 @@ import { AreaMode } from './dataset/enum/Area'
 import { IBadge } from './interface/Badge'
 import { WatermarkType } from './dataset/enum/Watermark'
 import { INTERNAL_SHORTCUT_KEY } from './dataset/constant/Shortcut'
+import { ChartState, IChartConfig, ChartEventType, ChartEventHandler } from './interface/Chart'
+import { ChartManager } from './core/chart/ChartManager'
 
 export default class Editor {
   public command: Command
@@ -83,6 +85,9 @@ export default class Editor {
   public register: Register
   public destroy: () => void
   public use: UsePlugin
+  
+  private draw: Draw
+  private chartManager: ChartManager
 
   constructor(
     container: HTMLDivElement,
@@ -123,7 +128,7 @@ export default class Editor {
     // 重写
     this.override = new Override()
     // 启动
-    const draw = new Draw(
+    this.draw = new Draw(
       container,
       editorOptions,
       {
@@ -136,20 +141,23 @@ export default class Editor {
       this.override
     )
     // 命令
-    this.command = new Command(new CommandAdapt(draw))
+    this.command = new Command(new CommandAdapt(this.draw))
     // 菜单
-    const contextMenu = new ContextMenu(draw, this.command)
+    const contextMenu = new ContextMenu(this.draw, this.command)
     // 快捷键
-    const shortcut = new Shortcut(draw, this.command)
+    const shortcut = new Shortcut(this.draw, this.command)
     // 注册
     this.register = new Register({
       contextMenu,
       shortcut,
-      i18n: draw.getI18n()
+      i18n: this.draw.getI18n()
     })
+    // 图表管理器
+    this.chartManager = new ChartManager(this.draw)
     // 注册销毁方法
     this.destroy = () => {
-      draw.destroy()
+      this.chartManager.dispose()
+      this.draw.destroy()
       shortcut.removeEvent()
       contextMenu.removeEvent()
       this.eventBus.dangerouslyClearAll()
@@ -157,6 +165,68 @@ export default class Editor {
     // 插件
     const plugin = new Plugin(this)
     this.use = plugin.use.bind(plugin)
+  }
+
+  /**
+   * 插入图表
+   * @param config - 图表配置对象
+   * @returns 图表唯一标识符
+   */
+  public insertChart(config: IChartConfig): string {
+    const chartId = this.chartManager.insertChart(config)
+    this.draw.render({
+      isSetCursor: false,
+      isCompute: false
+    })
+    return chartId
+  }
+
+  /**
+   * 更新图表数据
+   * @param chartId - 图表唯一标识符
+   * @param data - 新的图表数据
+   */
+  public updateChart(chartId: string, data: any): void {
+    this.chartManager.updateChart(chartId, data)
+  }
+
+  /**
+   * 获取图表实例
+   * @param chartId - 图表唯一标识符
+   * @returns ECharts 实例或 null
+   */
+  public getChartInstance(chartId: string): any | null {
+    return this.chartManager.getChartInstance(chartId)
+  }
+
+  /**
+   * 删除图表
+   * @param chartId - 图表唯一标识符
+   */
+  public removeChart(chartId: string): void {
+    this.chartManager.removeChart(chartId)
+    this.draw.render({
+      isSetCursor: false,
+      isCompute: false
+    })
+  }
+
+  /**
+   * 注册图表事件监听器
+   * @param event - 事件类型
+   * @param handler - 事件处理函数
+   */
+  public onChartEvent(event: ChartEventType, handler: ChartEventHandler): void {
+    this.chartManager.on(event, handler)
+  }
+
+  /**
+   * 注销图表事件监听器
+   * @param event - 事件类型
+   * @param handler - 事件处理函数
+   */
+  public offChartEvent(event: ChartEventType, handler: ChartEventHandler): void {
+    this.chartManager.off(event, handler)
   }
 }
 
@@ -213,7 +283,8 @@ export {
   AreaMode,
   ControlState,
   FlexDirection,
-  WatermarkType
+  WatermarkType,
+  ChartState
 }
 
 // 对外类型
@@ -235,3 +306,19 @@ export type {
   IBadge,
   IGetElementListByHTMLOption
 }
+
+// 图表相关类型
+export type {
+  IChartConfig,
+  IChartInteractionConfig,
+  IChartDataConfig,
+  IChartElement,
+  IChartInstance,
+  ChartEventType,
+  IChartEvent,
+  ChartEventHandler,
+  IValidationResult,
+  ISerializedChartConfig,
+  IViewportCallback,
+  IChartErrorLog
+} from './interface/Chart'

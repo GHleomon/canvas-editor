@@ -30,8 +30,12 @@ export default defineConfig(({ mode }) => {
           entry: path.resolve(__dirname, 'src/editor/index.ts')
         },
         rollupOptions: {
+          external: ['echarts'],
           output: {
-            sourcemap: true
+            sourcemap: true,
+            globals: {
+              echarts: 'echarts'
+            }
           }
         }
       }
